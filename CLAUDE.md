@@ -1,46 +1,74 @@
-# CLAUDE.md
+# Portal Vilela 1931 / Consorcios Online
+
+> **Última actualización:** 2026-10-12.
+> **Fuentes:** (1) el `CONTEXTO.md` que Mariano subió en otra conversación, volcado en la rama `claude/festive-ride-2kpoul`; (2) lo que verifiqué en vivo contra Supabase y Vercel el 2026-10-12, marcado **[VERIFICADO]**.
+> Este repo **no tiene código**: el código vive en la Mac de Mariano (git local, sin remoto). Nada está verificado contra código.
+> Lo marcado **(suposición)** no figura en ninguna de las dos fuentes.
 
 ## Estado del proyecto
 
-> Última actualización: 2026-10-12. Fuente: el repo (vacío, sin commits previos) y la conversación con Mariano.
-> Todo lo que no está confirmado aparece marcado **[SUPOSICIÓN]** o **[FALTA DATO]**.
-
 ### Qué es y para qué sirve
-- **[SUPOSICIÓN]** Repo para centralizar la conexión de las ~20 líneas de WhatsApp de los distintos negocios de Mariano a la API oficial de WhatsApp (vía Kapso), para atenderlas e integrarlas sin depender de celulares físicos.
-- **[FALTA DATO]** Confirmar si `vilela1931` es ese proyecto o un negocio/producto distinto (el nombre no lo aclara y no hay código).
+Empezó como portal de vecinos del Consorcio Vilela 1931 (CABA, 17 UF, sin encargado): liquidaciones de expensas, deuda por UF, pagos informados, chat, votaciones y control de la administración.
+**[VERIFICADO]** Hoy la base y el proyecto de Vercel son **multi-consorcio con suscripción paga ("Consorcios Online")**. Vilela es el único consorcio cargado y está en plan `consorcio`, en modo `cortesia`.
 
 ### Stack y despliegue
-| Pieza | Estado |
-|---|---|
-| Código | Ninguno todavía. El repo no tenía commits. |
-| WhatsApp | **Confirmado:** WhatsApp Business Platform (Cloud API de Meta) gestionado con **Kapso**. |
-| URL de producción | **[FALTA DATO]** |
-| Proyecto de Vercel | **[FALTA DATO]** |
-| Proyecto de Supabase | **[FALTA DATO]** |
-
-Números en Kapso (consultados el 2026-10-11):
-| Número | Nombre | Modo | Estado |
-|---|---|---|---|
-| +54 9 11 7260-6650 | Comercial Garden House | Coexistencia (app + API) | Conectado, calidad GREEN, límite TIER_2K, WABA aprobada |
-| (sin número) | Sandbox WhatsApp | Sandbox | Solo pruebas |
+- Next.js 15.5 (App Router, Server Actions), React 19, `@supabase/ssr`, chart.js. CSS propio, sin Tailwind. (Según el CONTEXTO.md; no está verificado contra código.)
+- **Vercel [VERIFICADO]:** team `agostomariano-9165s-projects`, proyecto **`consorcios-online`** (antes `vilela-1931`), id `prj_3CaFfVPVHWi1VWaNNBy9drnJkoiV`, Node 24.
+  - Dominios: `consorciosonline.com.ar`, `www.consorciosonline.com.ar`, `consorcios-online.vercel.app` y `vilela-1931.vercel.app`.
+  - Las previews están protegidas por SSO; producción es pública y la app tiene su propio login.
+  - El 2026-10-12 había un deploy en `INITIALIZING`. Desde este entorno no pude abrir la URL porque el proxy bloquea el acceso.
+- **Supabase [VERIFICADO]:** proyecto `vilela-1931`, ref `cnxheflolqscvpvpzlkg`, sa-east-1, Postgres 17, `ACTIVE_HEALTHY`, creado el 2026-10-11.
+- **Código:** carpeta `vilela-1931/app` en iCloud, en la Mac de Mariano.
+- **Deploy:** con la Vercel CLI desde esa carpeta: `npx vercel@latest deploy --prod --yes --scope agostomariano-9165s-projects`.
 
 ### Decisiones tomadas y por qué
-1. **No comprar un SIM bank ni un gateway GSM.** WhatsApp Cloud API solo necesita el chip para recibir el código de verificación una vez. Un gateway solo hace falta para SMS o voz, y además las operadoras bloquean los SIM box.
-2. **No usar WhatsApp "no oficial"** (Evolution API, Baileys). Con 20 números el riesgo de ban es alto.
-3. **Recomendación (pendiente de que Mariano la confirme número por número):** modo **solo API** para la mayoría de las líneas, atendidas desde el inbox de Kapso. **Coexistencia** solo donde alguien atiende hoy desde el celular, porque obliga a abrir la app al menos cada 14 días.
-4. **Recomendación:** una cuenta de empresa de Meta (Business Portfolio) verificada por cada razón social o CUIT. La verificación sube el límite de números.
+| Decisión | Por qué |
+|---|---|
+| Next.js + Supabase + Vercel, después de un prototipo estático | Validar pantallas antes de construir **(suposición)** |
+| **[VERIFICADO]** Pasar de un solo edificio a multi-consorcio con planes, suscripción por Mercado Pago (`mp_preapproval_id`), cupones y referidos | Convertir el portal en producto vendible **(suposición)** |
+| Un usuario por vecino, dado de alta por el admin | Controlar quién entra **(suposición)** |
+| Votos con doble cómputo (por unidades y por porcentual) | Criterio de las asambleas de propiedad horizontal **(suposición)** |
+| El vecino informa el pago con comprobante y el admin lo valida | Ningún pago cuenta sin validación |
+| Deploy por la CLI, no por el conector MCP de Vercel | **[VERIFICADO]** El MCP también da 403 al leer las variables de entorno |
+| Compilar fuera de iCloud | iCloud interfiere con `node_modules` y `.next` **(suposición)** |
 
-### Estado actual y próximo paso
-- **Estado:** 1 de ~20 números migrado (Garden House, en coexistencia). Falta definir las otras ~19.
-- **Próximo paso:** armar la tabla de las 20 líneas con número, negocio, modo (coexistencia o solo API) y responsable. Después la migración la ejecutan Nacho o Euge con una checklist: verificar el número, activar el PIN, cargar el nombre visible y probar enviando y recibiendo.
+### Estado actual y próximo paso [VERIFICADO en la base, 2026-10-12]
+- 1 consorcio, 17 unidades, 15 liquidaciones, 19 migraciones (la última es `instagram_ritmo_y_datos_por_usuario`, del 2026-10-12).
+- **El admin ya está creado:** 1 usuario en `auth.users` y 1 miembro activo que es admin y consejo. El paso que el CONTEXTO.md daba como bloqueante ya está hecho.
+- **No hay vecinos dados de alta:** 1 miembro para 17 unidades.
+- El esquema cambió respecto del CONTEXTO.md: los permisos ya no viven en `perfiles`, ahora están en `miembros` (`es_admin`, `es_consejo`, `activo`, con `consorcio_id`). Además hay tablas nuevas: `consorcios`, `membresias`, `plataforma_admins` (2), `cupones`, `referidos`, `publicaciones` (19, Instagram), `diagnosticos`, `ingresos_mail`, `secretos` y `accesos`.
+- **Próximo paso:** probar las pantallas con sesión iniciada y dar de alta a los vecinos de Vilela.
 
 ### Turno: de quién es la pelota
-**De Mariano.** Tiene que pasar la lista de las ~20 líneas (número y negocio) y decidir el modo de cada una. Hasta que lo haga, Nacho y Euge no pueden arrancar.
+**Mariano.** Tiene que probar el portal logueado, definir el consejo y cargar los vecinos. Además tiene que decidir si Consorcios Online se vende o sigue como herramienta propia. Euge, Nacho y los clientes no figuran en este proyecto **(suposición)**.
 
 ### Pendientes técnicos conocidos
-- [ ] **Garden House sin PIN de verificación en dos pasos** (`is_pin_enabled: false`): cualquiera que tenga el chip puede volver a registrar el número. Activarlo ya.
-- [ ] **Garden House con nombre visible sin aprobar** (`name_status: NON_EXISTS`): cargarlo y mandarlo a aprobación.
-- [ ] Mantener activos los chips prepagos (recarga o plan mínimo). Si la línea se da de baja, la operadora recicla el número.
-- [ ] Verificar el Business Portfolio de cada razón social para no chocar con el límite de números.
-- [ ] Definir las plantillas de mensajes salientes, que son las que cobra Meta.
-- [ ] **[FALTA DATO]** Si va a haber código propio en este repo (webhooks, CRM, Supabase), definir el stack y el despliegue y completar esta sección.
+1. **Subir el código a este repo y conectarlo a Vercel.** Hoy todo depende de una carpeta de iCloud en una sola Mac: si se pierde, se pierde el producto.
+2. Revisar todas las pantallas con sesión iniciada (no consta que se haya hecho).
+3. Dar de alta a los vecinos (16 unidades sin miembro).
+4. Cargar la liquidación de 2026-05 y las viejas (2022–2023).
+5. **(suposición)** Confirmar que el `SUPABASE_SERVICE_ROLE_KEY` esté cargado en Vercel. No lo pude verificar porque el MCP da 403.
+6. Actualizar la "Referencia técnica" de abajo contra el código real: está desactualizada.
+7. Opcionales: subir el PDF de la liquidación desde la app; avisos por mail o WhatsApp (hay una línea en Kapso).
+
+> **Repo público:** no commitear datos bancarios, cuentas de servicios, datos de vecinos ni hallazgos sobre la administración.
+
+---
+
+## Referencia técnica (del CONTEXTO.md; puede estar desactualizada)
+
+### Base de datos
+- `unidades` (17, con porcentual). Los roles ahora están en `miembros` (ver arriba); `perfiles` queda con id, nombre y email.
+- `liquidaciones`, `liquidacion_unidades`, `gastos` (categorías SP/AB/MA/RU/LI/AD/SI/BA/SE/OT).
+- `pagos_informados` + bucket privado `comprobantes/<UF>/…`.
+- `conversaciones`, `mensajes` (chat en realtime).
+- `votaciones`, `votos`: un voto por UF, se puede cambiar hasta el cierre.
+- `servicios`, `avisos` (realtime), `administraciones`, `eventos`.
+- Vistas: `unidades_con_deuda`, `resultado_votaciones`, `indicadores`, `posibles_duplicados`, `proveedores_obras`, `servicios_pagos`.
+
+### Secciones de la app
+Mi unidad · UF con deuda + Informar pago · Liquidación de expensas (mes a mes + análisis anual) · Gastos · Servicios públicos · Indicadores · Chat · Votaciones · Configuración (solo admin) · Aviso general.
+
+### Convenciones
+- Fuentes Archivo / Public Sans / IBM Plex Mono. Tokens de color claro/oscuro en `globals.css`.
+- `.vercel/` no se versiona.
